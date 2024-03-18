@@ -35,7 +35,17 @@ def train_model(X_train, y_train):
         return None
 
 def main():
+    st.subheader("How Predictions are Made:")
+    st.markdown("""
+    - The application fetches historical stock price data from Yahoo Finance based on the provided stock symbol, start date, and end date.
+    - It then extracts features such as the opening price, closing price, highest price, lowest price, and trading volume.
+    - The model uses this historical data to train a linear regression model, which learns patterns in the data to predict the next day's closing price.
+    - After training, the model is evaluated using mean squared error (MSE), which measures the average squared difference between the actual and predicted values.
+    - Finally, the model predicts the next day's closing price based on the most recent data available.
+    """)
+
     st.title('Stock Price Predictor')
+    st.subheader('Not financial advice!')
     
     # User inputs
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):')
