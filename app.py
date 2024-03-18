@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from datetime import datetime
 
 def load_data(stock_symbol, start_date, end_date):
     try:
@@ -33,6 +34,13 @@ def train_model(X_train, y_train):
     except Exception as e:
         st.error(f"Error training model: {e}")
         return None
+    
+def validate_date(date_text):
+    try:
+        datetime.strptime(date_text, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
 
 def main():
     st.subheader("How Predictions are Made:")
@@ -53,23 +61,30 @@ def main():
     end_date = st.text_input('Enter end date (YYYY-MM-DD):')
     
     # Load data
+   # Input validation
     if st.button('Fetch Data'):
+        if not stock_symbol:
+            st.error("Please enter a valid stock symbol.")
+            return
+        if not validate_date(start_date) or not validate_date(end_date):
+            st.error("Please enter valid start and end dates in the format YYYY-MM-DD.")
+            return
         stock_data = load_data(stock_symbol, start_date, end_date)
-        if stock_data is not None:
-            st.write(stock_data)
+        st.write(stock_data)
 
-            # Define features and target variable
-            X = stock_data[['Open', 'High', 'Low', 'Close', 'Volume']]
-            y = stock_data['NextClose']
 
-            # Split the data into training and testing sets
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Define features and target variable
+        X = stock_data[['Open', 'High', 'Low', 'Close', 'Volume']]
+        y = stock_data['NextClose']
 
-            # Train the model
-            model = train_model(X_train, y_train)
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-            # Make predictions on the test set
-            if model is not None:
+        # Train the model
+        model = train_model(X_train, y_train)
+
+        # Make predictions on the test set
+        if model is not None:
                 y_pred = model.predict(X_test)
 
                 # Evaluate the model
