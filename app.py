@@ -4,6 +4,8 @@ import pandas as pd
 import ta
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error
 from datetime import datetime
 
@@ -35,10 +37,19 @@ def load_data(stock_symbol, start_date, end_date, selected_indicators):
         st.error(f"Error fetching data: {e}")
         return None
 
-# Function to train the linear regression model
-def train_model(X_train, y_train):
+# Function to train machine learning models
+def train_model(X_train, y_train, model_type):
     try:
-        model = LinearRegression()
+        if model_type == 'Linear Regression':
+            model = LinearRegression()
+        elif model_type == 'Random Forest':
+            model = RandomForestRegressor(n_estimators=100, random_state=42)
+        elif model_type == 'Support Vector Machine':
+            model = SVR(kernel='linear')
+        else:
+            st.error("Invalid model type selected.")
+            return None
+        
         model.fit(X_train, y_train)
         return model
     except Exception as e:
@@ -58,7 +69,7 @@ def main():
     st.markdown("""
     - The application fetches historical stock price data from Yahoo Finance based on the provided stock symbol, start date, and end date.
     - It then calculates selected technical indicators such as Simple Moving Average (SMA), Exponential Moving Average (EMA), etc.
-    - The model uses this historical data to train a linear regression model, which learns patterns in the data to predict the next day's closing price.
+    - The model uses this historical data to train a machine learning model (linear regression, random forest, or support vector machine) based on user selection.
     - After training, the model is evaluated using mean squared error (MSE), which measures the average squared difference between the actual and predicted values.
     - Finally, the model predicts the next day's closing price based on the most recent data available.
     """)
@@ -77,6 +88,12 @@ def main():
         'Select Technical Indicators to Display:',
         ['SMA', 'EMA'],  # Add more indicators as needed
         default=['SMA']
+    )
+
+    # Model selection
+    model_type = st.sidebar.selectbox(
+        'Select Machine Learning Model:',
+        ['Linear Regression', 'Random Forest', 'Support Vector Machine']
     )
 
     # Load data
@@ -99,7 +116,7 @@ def main():
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
             # Train the model
-            model = train_model(X_train, y_train)
+            model = train_model(X_train, y_train, model_type)
 
             # Make predictions on the test set
             if model is not None:
